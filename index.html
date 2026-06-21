@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automated Land Acquisition Dashboard</title>
+  <style>
+    :root {
+      --bg: #f4f7f6;
+      --surface: #ffffff;
+      --surface-2: #eef4f1;
+      --ink: #17211d;
+      --muted: #65736d;
+      --line: #d9e3df;
+      --green: #23745b;
+      --green-2: #dff3ea;
+      --amber: #b86b00;
+      --amber-2: #fff1d8;
+      --red: #b42318;
+      --red-2: #ffe2df;
+      --blue: #275f9f;
+      --blue-2: #e3effc;
+      --shadow: 0 18px 45px rgba(25, 42, 35, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 264px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: #15372d;
+      color: #f5fbf8;
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #f3be4f;
+      color: #17342d;
+      font-weight: 800;
+    }
+
+    .brand h1 {
+      font-size: 16px;
+      line-height: 1.25;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #d9eee6;
+      text-align: left;
+      padding: 11px 12px;
+      cursor: pointer;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .side-panel {
+      margin-top: 28px;
+      padding: 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .side-panel .label {
+      color: #b9d6cc;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .side-panel strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 2px;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 20px 28px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .title h2 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-button,
+    .primary-button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      min-height: 40px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(23, 33, 29, 0.04);
+    }
+
+    .icon-button {
+      width: 42px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .primary-button {
+      background: var(--green);
+      color: #ffffff;
+      border-color: var(--green);
+      padding: 0 14px;
+      font-weight: 700;
+    }
+
+    .content {
+      padding: 24px 28px 34px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 10px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      padding: 18px;
+      min-height: 124px;
+      display: grid;
+      align-content: space-between;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .kpi .value {
+      font-size: 34px;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .kpi .note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(340px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .section {
+      padding: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stage-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr) 72px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .stage-name {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .bar {
+      height: 12px;
+      border-radius: 99px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+    }
+
+    .stage-count {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .alerts {
+      display: grid;
+      gap: 10px;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      display: grid;
+      gap: 5px;
+      border: 1px solid transparent;
+    }
+
+    .alert strong {
+      font-size: 14px;
+    }
+
+    .alert span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .alert.red {
+      background: var(--red-2);
+      border-color: #ffc5bf;
+    }
+
+    .alert.amber {
+      background: var(--amber-2);
+      border-color: #ffd796;
+    }
+
+    .alert.blue {
+      background: var(--blue-2);
+      border-color: #bfd8f4;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      padding: 0 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: var(--green);
+      color: #ffffff;
+      border-color: var(--green);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      background: #f8fbfa;
+    }
+
+    .status,
+    .priority {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 0 9px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status.completed {
+      background: var(--green-2);
+      color: var(--green);
+    }
+
+    .status.progress {
+      background: var(--blue-2);
+      color: var(--blue);
+    }
+
+    .status.due {
+      background: var(--amber-2);
+      color: var(--amber);
+    }
+
+    .status.overdue {
+      background: var(--red-2);
+      color: var(--red);
+    }
+
+    .priority.high {
+      background: var(--red-2);
+      color: var(--red);
+    }
+
+    .priority.medium {
+      background: var(--amber-2);
+      color: var(--amber);
+    }
+
+    .priority.normal {
+      background: var(--green-2);
+      color: var(--green);
+    }
+
+    .workload {
+      display: grid;
+      gap: 12px;
+    }
+
+    .officer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 52px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .officer strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .officer small {
+      color: var(--muted);
+    }
+
+    .mini-bar {
+      height: 8px;
+      border-radius: 99px;
+      background: var(--surface-2);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .mini-bar span {
+      display: block;
+      height: 100%;
+      background: var(--blue);
+      border-radius: inherit;
+    }
+
+    .count {
+      text-align: right;
+      font-weight: 800;
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: min(360px, calc(100vw - 48px));
+      background: #17342d;
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 20px 55px rgba(0, 0, 0, 0.22);
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: 180ms ease;
+      z-index: 20;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1080px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .kpis,
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .content {
+        padding: 18px;
+      }
+
+      .filters,
+      .kpis,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stage {
+        grid-template-columns: 92px minmax(0, 1fr) 54px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">LA</div>
+        <h1>Land Acquisition Monitoring</h1>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" type="button">Dashboard</button>
+        <button type="button">Cases</button>
+        <button type="button">Statutory Stages</button>
+        <button type="button">Notifications</button>
+        <button type="button">Reports</button>
+        <button type="button">Audit Trail</button>
+      </nav>
+
+      <div class="side-panel">
+        <div class="label">Simhastha 2028</div>
+        <strong id="sideCompletion">71%</strong>
+        <div class="label">Overall statutory progress</div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div class="title">
+          <h2>Automated Land Acquisition Dashboard</h2>
+          <p>Monitor statutory sections, due dates, officer actions, and escalations.</p>
+        </div>
+        <div class="actions">
+          <button class="icon-button" type="button" title="Refresh dashboard" id="refreshBtn">R</button>
+          <button class="icon-button" type="button" title="View alerts" id="alertBtn">A</button>
+          <button class="primary-button" type="button" id="notifyBtn">Send Reminder</button>
+        </div>
+      </header>
+
+      <section class="content">
+        <form class="filters" id="filters">
+          <div class="field">
+            <label for="district">District</label>
+            <select id="district">
+              <option value="all">All Districts</option>
+              <option value="Ujjain">Ujjain</option>
+              <option value="Indore">Indore</option>
+              <option value="Dewas">Dewas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="section">Section</label>
+            <select id="section">
+              <option value="all">All Sections</option>
+              <option value="Section 4">Section 4</option>
+              <option value="Section 19">Section 19</option>
+              <option value="Section 21">Section 21</option>
+              <option value="Award">Award</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="officer">Officer</label>
+            <select id="officer">
+              <option value="all">All Officers</option>
+              <option value="Revenue Officer">Revenue Officer</option>
+              <option value="Naib Tehsildar">Naib Tehsildar</option>
+              <option value="Tehsildar">Tehsildar</option>
+              <option value="SDM">SDM</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="status">Status</label>
+            <select id="status">
+              <option value="all">All Statuses</option>
+              <option value="Completed">Completed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Due Soon">Due Soon</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="search">Case Search</label>
+            <input id="search" type="search" placeholder="Case no. or village" />
+          </div>
+        </form>
+
+        <section class="kpis" aria-label="Key performance indicators">
+          <article class="card kpi">
+            <div>
+              <div class="label">Total Cases</div>
+              <div class="value" id="totalCases">0</div>
+            </div>
+            <div class="note">Across selected filters</div>
+          </article>
+          <article class="card kpi">
+            <div>
+              <div class="label">Due Within 7 Days</div>
+              <div class="value" id="dueSoon">0</div>
+            </div>
+            <div class="note">Reminder required</div>
+          </article>
+          <article class="card kpi">
+            <div>
+              <div class="label">Overdue Cases</div>
+              <div class="value" id="overdueCases">0</div>
+            </div>
+            <div class="note">Escalation active</div>
+          </article>
+          <article class="card kpi">
+            <div>
+              <div class="label">Completed</div>
+              <div class="value" id="completedCases">0</div>
+            </div>
+            <div class="note">Statutory action closed</div>
+          </article>
+        </section>
+
+        <section class="grid">
+          <article class="card section">
+            <div class="section-head">
+              <h3>Section-wise Progress</h3>
+              <span id="stageSummary">Live case movement</span>
+            </div>
+            <div class="stage-list" id="stageList"></div>
+          </article>
+
+          <article class="card section">
+            <div class="section-head">
+              <h3>Priority Alerts</h3>
+              <span>Auto generated</span>
+            </div>
+            <div class="alerts" id="alerts"></div>
+          </article>
+        </section>
+
+        <section class="grid">
+          <article class="card section">
+            <div class="section-head">
+              <h3>Acquisition Cases</h3>
+              <span id="caseCountLabel">0 records</span>
+            </div>
+            <div class="tabs" role="tablist">
+              <button class="tab active" type="button" data-tab="all">All</button>
+              <button class="tab" type="button" data-tab="Due Soon">Due Soon</button>
+              <button class="tab" type="button" data-tab="Overdue">Overdue</button>
+              <button class="tab" type="button" data-tab="Completed">Completed</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Case No.</th>
+                    <th>Village</th>
+                    <th>Section</th>
+                    <th>Officer</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                  </tr>
+                </thead>
+                <tbody id="caseRows"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="card section">
+            <div class="section-head">
+              <h3>Officer Workload</h3>
+              <span>Pending tasks</span>
+            </div>
+            <div class="workload" id="workload"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const cases = [
+      {
+        no: "LA-2028-001",
+        district: "Ujjain",
+        village: "Triveni",
+        section: "Section 4",
+        officer: "Revenue Officer",
+        due: "2026-06-19",
+        status: "Due Soon",
+        priority: "High"
+      },
+      {
+        no: "LA-2028-002",
+        district: "Ujjain",
+        village: "Sadawal",
+        section: "Section 19",
+        officer: "Naib Tehsildar",
+        due: "2026-06-14",
+        status: "Overdue",
+        priority: "High"
+      },
+      {
+        no: "LA-2028-003",
+        district: "Ujjain",
+        village: "Mangalnath",
+        section: "Section 21",
+        officer: "Tehsildar",
+        due: "2026-06-23",
+        status: "In Progress",
+        priority: "Medium"
+      },
+      {
+        no: "LA-2028-004",
+        district: "Indore",
+        village: "Sanwer",
+        section: "Award",
+        officer: "SDM",
+        due: "2026-06-12",
+        status: "Completed",
+        priority: "Normal"
+      },
+      {
+        no: "LA-2028-005",
+        district: "Dewas",
+        village: "Nagukhedi",
+        section: "Section 4",
+        officer: "Revenue Officer",
+        due: "2026-06-17",
+        status: "Due Soon",
+        priority: "High"
+      },
+      {
+        no: "LA-2028-006",
+        district: "Ujjain",
+        village: "Kaliyadeh",
+        section: "Section 19",
+        officer: "Tehsildar",
+        due: "2026-06-28",
+        status: "In Progress",
+        priority: "Medium"
+      },
+      {
+        no: "LA-2028-007",
+        district: "Indore",
+        village: "Hatod",
+        section: "Section 21",
+        officer: "Naib Tehsildar",
+        due: "2026-06-11",
+        status: "Overdue",
+        priority: "High"
+      },
+      {
+        no: "LA-2028-008",
+        district: "Dewas",
+        village: "Barotha",
+        section: "Award",
+        officer: "SDM",
+        due: "2026-06-30",
+        status: "In Progress",
+        priority: "Normal"
+      },
+      {
+        no: "LA-2028-009",
+        district: "Ujjain",
+        village: "Ninora",
+        section: "Section 4",
+        officer: "Revenue Officer",
+        due: "2026-06-10",
+        status: "Completed",
+        priority: "Normal"
+      }
+    ];
+
+    let activeTab = "all";
+    const today = new Date("2026-06-16T00:00:00");
+
+    const filters = document.getElementById("filters");
+    const tabs = document.querySelectorAll(".tab");
+    const toast = document.getElementById("toast");
+
+    function getFilters() {
+      return {
+        district: document.getElementById("district").value,
+        section: document.getElementById("section").value,
+        officer: document.getElementById("officer").value,
+        status: document.getElementById("status").value,
+        search: document.getElementById("search").value.trim().toLowerCase()
+      };
+    }
+
+    function filteredCases() {
+      const f = getFilters();
+      return cases.filter((item) => {
+        const matchesDistrict = f.district === "all" || item.district === f.district;
+        const matchesSection = f.section === "all" || item.section === f.section;
+        const matchesOfficer = f.officer === "all" || item.officer === f.officer;
+        const matchesStatus = f.status === "all" || item.status === f.status;
+        const matchesTab = activeTab === "all" || item.status === activeTab;
+        const text = `${item.no} ${item.village}`.toLowerCase();
+        const matchesSearch = !f.search || text.includes(f.search);
+        return matchesDistrict && matchesSection && matchesOfficer && matchesStatus && matchesTab && matchesSearch;
+      });
+    }
+
+    function statusClass(status) {
+      if (status === "Completed") return "completed";
+      if (status === "Overdue") return "overdue";
+      if (status === "Due Soon") return "due";
+      return "progress";
+    }
+
+    function priorityClass(priority) {
+      return priority.toLowerCase();
+    }
+
+    function formatDate(value) {
+      return new Intl.DateTimeFormat("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }).format(new Date(`${value}T00:00:00`));
+    }
+
+    function daysFromToday(value) {
+      const due = new Date(`${value}T00:00:00`);
+      return Math.round((due - today) / 86400000);
+    }
+
+    function renderKpis(data) {
+      document.getElementById("totalCases").textContent = data.length;
+      document.getElementById("dueSoon").textContent = data.filter((item) => item.status === "Due Soon").length;
+      document.getElementById("overdueCases").textContent = data.filter((item) => item.status === "Overdue").length;
+      document.getElementById("completedCases").textContent = data.filter((item) => item.status === "Completed").length;
+    }
+
+    function renderStages(data) {
+      const sections = ["Section 4", "Section 19", "Section 21", "Award"];
+      const total = Math.max(data.length, 1);
+      const stageList = document.getElementById("stageList");
+      stageList.innerHTML = sections.map((section) => {
+        const count = data.filter((item) => item.section === section).length;
+        const pct = Math.round((count / total) * 100);
+        return `
+          <div class="stage">
+            <div class="stage-name">${section}</div>
+            <div class="bar" aria-label="${section} ${pct}%"><span style="width: ${pct}%"></span></div>
+            <div class="stage-count">${count} cases</div>
+          </div>
+        `;
+      }).join("");
+
+      const completed = cases.filter((item) => item.status === "Completed").length;
+      const completion = Math.round((completed / cases.length) * 100);
+      document.getElementById("sideCompletion").textContent = `${completion}%`;
+    }
+
+    function renderAlerts(data) {
+      const overdue = data.filter((item) => item.status === "Overdue");
+      const dueSoon = data.filter((item) => item.status === "Due Soon");
+      const inProgress = data.filter((item) => item.status === "In Progress");
+      const alertItems = [];
+
+      overdue.slice(0, 2).forEach((item) => {
+        alertItems.push({
+          type: "red",
+          title: `${item.no} overdue`,
+          body: `${item.section} action for ${item.village} is overdue by ${Math.abs(daysFromToday(item.due))} days. Escalate to higher authority.`
+        });
+      });
+
+      dueSoon.slice(0, 2).forEach((item) => {
+        alertItems.push({
+          type: "amber",
+          title: `${item.no} due soon`,
+          body: `${item.officer} must complete ${item.section} action by ${formatDate(item.due)}.`
+        });
+      });
+
+      if (inProgress.length) {
+        alertItems.push({
+          type: "blue",
+          title: "Progress review pending",
+          body: `${inProgress.length} active cases require stage-wise review before the next statutory deadline.`
+        });
+      }
+
+      document.getElementById("alerts").innerHTML = alertItems.length
+        ? alertItems.map((item) => `
+          <div class="alert ${item.type}">
+            <strong>${item.title}</strong>
+            <span>${item.body}</span>
+          </div>
+        `).join("")
+        : `<div class="alert blue"><strong>No priority alerts</strong><span>All selected cases are within the expected timeline.</span></div>`;
+    }
+
+    function renderTable(data) {
+      document.getElementById("caseCountLabel").textContent = `${data.length} records`;
+      document.getElementById("caseRows").innerHTML = data.map((item) => `
+        <tr>
+          <td><strong>${item.no}</strong></td>
+          <td>${item.village}</td>
+          <td>${item.section}</td>
+          <td>${item.officer}</td>
+          <td>${formatDate(item.due)}</td>
+          <td><span class="status ${statusClass(item.status)}">${item.status}</span></td>
+          <td><span class="priority ${priorityClass(item.priority)}">${item.priority}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderWorkload(data) {
+      const officers = ["Revenue Officer", "Naib Tehsildar", "Tehsildar", "SDM"];
+      const max = Math.max(...officers.map((name) => data.filter((item) => item.officer === name).length), 1);
+      document.getElementById("workload").innerHTML = officers.map((name) => {
+        const assigned = data.filter((item) => item.officer === name);
+        const pending = assigned.filter((item) => item.status !== "Completed").length;
+        const pct = Math.round((assigned.length / max) * 100);
+        return `
+          <div class="officer">
+            <div>
+              <strong>${name}</strong>
+              <small>${pending} pending out of ${assigned.length} assigned</small>
+              <div class="mini-bar"><span style="width: ${pct}%"></span></div>
+            </div>
+            <div class="count">${assigned.length}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function render() {
+      const data = filteredCases();
+      renderKpis(data);
+      renderStages(data);
+      renderAlerts(data);
+      renderTable(data);
+      renderWorkload(data);
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    filters.addEventListener("input", render);
+    filters.addEventListener("change", render);
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((item) => item.classList.remove("active"));
+        tab.classList.add("active");
+        activeTab = tab.dataset.tab;
+        render();
+      });
+    });
+
+    document.getElementById("notifyBtn").addEventListener("click", () => {
+      const data = filteredCases();
+      const targets = data.filter((item) => item.status === "Due Soon" || item.status === "Overdue").length;
+      showToast(`${targets} reminder and escalation notifications queued for responsible officers.`);
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      render();
+      showToast("Dashboard refreshed with latest case status.");
+    });
+
+    document.getElementById("alertBtn").addEventListener("click", () => {
+      const count = filteredCases().filter((item) => item.status === "Due Soon" || item.status === "Overdue").length;
+      showToast(`${count} active alert items need administrative attention.`);
+    });
+
+    render();
+  </script>
+</body>
+</html>
