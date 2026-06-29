@@ -499,6 +499,167 @@
       font-weight: 800;
     }
 
+    .scheduler {
+      display: grid;
+      gap: 14px;
+    }
+
+    .scheduler-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      justify-content: space-between;
+    }
+
+    .scheduler-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex: none;
+    }
+
+    .dot.live {
+      background: var(--green);
+      box-shadow: 0 0 0 4px var(--green-2);
+    }
+
+    .dot.paused {
+      background: var(--amber);
+      box-shadow: 0 0 0 4px var(--amber-2);
+    }
+
+    .scheduler-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .scheduler-controls label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .scheduler-controls select,
+    .scheduler-controls input {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 10px;
+    }
+
+    .ghost-button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      min-height: 36px;
+      padding: 0 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .ghost-button.on {
+      background: var(--green);
+      color: #ffffff;
+      border-color: var(--green);
+    }
+
+    .webhook-row {
+      display: grid;
+      gap: 6px;
+    }
+
+    .webhook-row input {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 10px;
+    }
+
+    .webhook-row .hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .log {
+      display: grid;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .log-empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 8px 2px;
+    }
+
+    .log-item {
+      display: grid;
+      grid-template-columns: 8px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .log-item .dot {
+      margin-top: 4px;
+    }
+
+    .log-item strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .log-item .meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .log-item .channel-tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 99px;
+      margin-left: 6px;
+      background: var(--blue-2);
+      color: var(--blue);
+    }
+
+    .log-item .channel-tag.sent {
+      background: var(--green-2);
+      color: var(--green);
+    }
+
+    .log-item .channel-tag.failed {
+      background: var(--red-2);
+      color: var(--red);
+    }
+
     .toast {
       position: fixed;
       right: 24px;
@@ -602,6 +763,10 @@
           <p>Monitor statutory sections, due dates, officer actions, and escalations.</p>
         </div>
         <div class="actions">
+          <div class="scheduler-status" id="topbarSchedulerStatus">
+            <span class="dot paused" id="topbarDot"></span>
+            <span id="topbarSchedulerText">Scheduler paused</span>
+          </div>
           <button class="icon-button" type="button" title="Refresh dashboard" id="refreshBtn">R</button>
           <button class="icon-button" type="button" title="View alerts" id="alertBtn">A</button>
           <button class="primary-button" type="button" id="notifyBtn">Send Reminder</button>
@@ -740,6 +905,50 @@
               <span>Pending tasks</span>
             </div>
             <div class="workload" id="workload"></div>
+          </article>
+        </section>
+        <section class="grid">
+          <article class="card section scheduler">
+            <div class="section-head">
+              <h3>Alert Scheduler</h3>
+              <span id="nextCheckLabel">Not running</span>
+            </div>
+
+            <div class="scheduler-row">
+              <div class="scheduler-status">
+                <span class="dot paused" id="schedulerDot"></span>
+                <span id="schedulerStatusText">Paused</span>
+                <span id="lastCheckedText" style="margin-left: 6px;"></span>
+              </div>
+              <div class="scheduler-controls">
+                <label for="intervalSelect">Check every</label>
+                <select id="intervalSelect">
+                  <option value="1">1 min</option>
+                  <option value="5" selected>5 min</option>
+                  <option value="15">15 min</option>
+                  <option value="30">30 min</option>
+                  <option value="60">60 min</option>
+                </select>
+                <button class="ghost-button" type="button" id="toggleSchedulerBtn">Start Scheduler</button>
+                <button class="ghost-button" type="button" id="runCheckNowBtn">Run Check Now</button>
+              </div>
+            </div>
+
+            <div class="webhook-row">
+              <label for="webhookUrl" style="font-size: 12px; color: var(--muted); font-weight: 700;">Notification webhook URL (Slack / Zapier / Make / Teams, etc.)</label>
+              <input id="webhookUrl" type="url" placeholder="https://hooks.slack.com/services/... (optional)" />
+              <span class="hint">If left blank, alerts are only recorded in the Notification Log below. Paste a webhook URL to also deliver alerts externally. The URL is kept only in this browser tab and is never sent anywhere except the webhook itself.</span>
+            </div>
+          </article>
+
+          <article class="card section">
+            <div class="section-head">
+              <h3>Notification Log</h3>
+              <span id="logCountLabel">0 sent</span>
+            </div>
+            <div class="log" id="notificationLog">
+              <div class="log-empty">No notifications yet. Start the scheduler or click "Run Check Now".</div>
+            </div>
           </article>
         </section>
       </section>
@@ -1029,8 +1238,16 @@
 
     document.getElementById("notifyBtn").addEventListener("click", () => {
       const data = filteredCases();
-      const targets = data.filter((item) => item.status === "Due Soon" || item.status === "Overdue").length;
-      showToast(`${targets} reminder and escalation notifications queued for responsible officers.`);
+      const targets = data.filter((item) => item.status === "Due Soon" || item.status === "Overdue");
+      targets.forEach((item) => {
+        queueNotification({
+          type: item.status === "Overdue" ? "red" : "amber",
+          title: `${item.no} ${item.status === "Overdue" ? "overdue" : "due soon"}`,
+          body: `${item.officer} action (${item.section}) for ${item.village} — due ${formatDate(item.due)}.`,
+          caseNo: item.no
+        });
+      });
+      showToast(`${targets.length} reminder and escalation notifications queued for responsible officers.`);
     });
 
     document.getElementById("refreshBtn").addEventListener("click", () => {
@@ -1041,6 +1258,218 @@
     document.getElementById("alertBtn").addEventListener("click", () => {
       const count = filteredCases().filter((item) => item.status === "Due Soon" || item.status === "Overdue").length;
       showToast(`${count} active alert items need administrative attention.`);
+    });
+
+    /* ---------------------------------------------------------------
+       SCHEDULER + NOTIFICATION DELIVERY
+       ---------------------------------------------------------------
+       - schedulerTimer runs an "alert check" on a configurable interval
+       - runAlertCheck() diffs current overdue/due-soon cases against
+         the last-known set so we only notify on NEW or CHANGED cases
+       - queueNotification() logs the alert in-app and, if a webhook
+         URL has been provided, also POSTs it out (Slack/Zapier/Make/
+         Teams-style incoming webhook payload). Swap sendToWebhook()
+         for a real connector call once one is wired up.
+    ----------------------------------------------------------------*/
+
+    let schedulerTimer = null;
+    let countdownTimer = null;
+    let nextCheckAt = null;
+    let lastAlertKeys = new Set();
+    const notificationLog = [];
+
+    const schedulerDot = document.getElementById("schedulerDot");
+    const topbarDot = document.getElementById("topbarDot");
+    const schedulerStatusText = document.getElementById("schedulerStatusText");
+    const topbarSchedulerText = document.getElementById("topbarSchedulerText");
+    const lastCheckedText = document.getElementById("lastCheckedText");
+    const nextCheckLabel = document.getElementById("nextCheckLabel");
+    const toggleSchedulerBtn = document.getElementById("toggleSchedulerBtn");
+    const intervalSelect = document.getElementById("intervalSelect");
+    const webhookInput = document.getElementById("webhookUrl");
+
+    function setSchedulerUI(running) {
+      schedulerDot.classList.toggle("live", running);
+      schedulerDot.classList.toggle("paused", !running);
+      topbarDot.classList.toggle("live", running);
+      topbarDot.classList.toggle("paused", !running);
+      schedulerStatusText.textContent = running ? "Running" : "Paused";
+      topbarSchedulerText.textContent = running ? "Scheduler running" : "Scheduler paused";
+      toggleSchedulerBtn.textContent = running ? "Stop Scheduler" : "Start Scheduler";
+      toggleSchedulerBtn.classList.toggle("on", running);
+    }
+
+    function startScheduler() {
+      const minutes = Number(intervalSelect.value);
+      const intervalMs = minutes * 60 * 1000;
+
+      stopScheduler(false);
+      setSchedulerUI(true);
+      runAlertCheck();
+
+      nextCheckAt = Date.now() + intervalMs;
+      schedulerTimer = window.setInterval(() => {
+        runAlertCheck();
+        nextCheckAt = Date.now() + intervalMs;
+      }, intervalMs);
+
+      countdownTimer = window.setInterval(updateCountdown, 1000);
+      updateCountdown();
+    }
+
+    function stopScheduler(updateUi = true) {
+      if (schedulerTimer) {
+        window.clearInterval(schedulerTimer);
+        schedulerTimer = null;
+      }
+      if (countdownTimer) {
+        window.clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+      nextCheckAt = null;
+      if (updateUi) {
+        setSchedulerUI(false);
+        nextCheckLabel.textContent = "Not running";
+      }
+    }
+
+    function updateCountdown() {
+      if (!nextCheckAt) {
+        nextCheckLabel.textContent = "Not running";
+        return;
+      }
+      const remainingMs = Math.max(0, nextCheckAt - Date.now());
+      const mins = Math.floor(remainingMs / 60000);
+      const secs = Math.floor((remainingMs % 60000) / 1000);
+      nextCheckLabel.textContent = `Next check in ${mins}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function runAlertCheck() {
+      const overdue = cases.filter((item) => item.status === "Overdue");
+      const dueSoon = cases.filter((item) => item.status === "Due Soon");
+      const currentKeys = new Set();
+      let newAlertCount = 0;
+
+      overdue.forEach((item) => {
+        const key = `${item.no}:Overdue`;
+        currentKeys.add(key);
+        if (!lastAlertKeys.has(key)) {
+          newAlertCount += 1;
+          queueNotification({
+            type: "red",
+            title: `${item.no} overdue`,
+            body: `${item.section} action for ${item.village} is overdue by ${Math.abs(daysFromToday(item.due))} day(s). Escalate to ${item.officer}'s supervising authority.`,
+            caseNo: item.no
+          });
+        }
+      });
+
+      dueSoon.forEach((item) => {
+        const key = `${item.no}:DueSoon`;
+        currentKeys.add(key);
+        if (!lastAlertKeys.has(key)) {
+          newAlertCount += 1;
+          queueNotification({
+            type: "amber",
+            title: `${item.no} due soon`,
+            body: `${item.officer} must complete ${item.section} action for ${item.village} by ${formatDate(item.due)}.`,
+            caseNo: item.no
+          });
+        }
+      });
+
+      lastAlertKeys = currentKeys;
+      lastCheckedText.textContent = `Last checked ${new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date())}`;
+
+      if (newAlertCount === 0) {
+        showToast("Scheduled check complete — no new alerts.");
+      } else {
+        showToast(`Scheduled check found ${newAlertCount} new alert(s).`);
+      }
+    }
+
+    function queueNotification(alert) {
+      const entry = {
+        ...alert,
+        time: new Date(),
+        status: "logged"
+      };
+      notificationLog.unshift(entry);
+      renderLog();
+
+      const webhookUrl = webhookInput.value.trim();
+      if (webhookUrl) {
+        sendToWebhook(webhookUrl, entry);
+      }
+    }
+
+    async function sendToWebhook(url, entry) {
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          mode: "cors",
+          body: JSON.stringify({
+            text: `[${entry.title}] ${entry.body}`,
+            title: entry.title,
+            body: entry.body,
+            caseNo: entry.caseNo,
+            severity: entry.type,
+            timestamp: entry.time.toISOString()
+          })
+        });
+        entry.status = "sent";
+      } catch (err) {
+        entry.status = "failed";
+      }
+      renderLog();
+    }
+
+    function renderLog() {
+      document.getElementById("logCountLabel").textContent =
+        `${notificationLog.filter((entry) => entry.status === "sent").length} sent / ${notificationLog.length} total`;
+
+      const container = document.getElementById("notificationLog");
+      if (!notificationLog.length) {
+        container.innerHTML = `<div class="log-empty">No notifications yet. Start the scheduler or click "Run Check Now".</div>`;
+        return;
+      }
+
+      container.innerHTML = notificationLog.slice(0, 30).map((entry) => {
+        const timeLabel = new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(entry.time);
+        const tagClass = entry.status === "sent" ? "sent" : entry.status === "failed" ? "failed" : "";
+        const tagText = entry.status === "sent" ? "Sent" : entry.status === "failed" ? "Webhook failed" : "Logged in-app";
+        return `
+          <div class="log-item">
+            <span class="dot ${entry.type === "red" ? "paused" : "live"}" style="background: ${entry.type === "red" ? "var(--red)" : entry.type === "amber" ? "var(--amber)" : "var(--blue)"};"></span>
+            <div>
+              <strong>${entry.title}<span class="channel-tag ${tagClass}">${tagText}</span></strong>
+              <div>${entry.body}</div>
+              <div class="meta">${timeLabel}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    toggleSchedulerBtn.addEventListener("click", () => {
+      if (schedulerTimer) {
+        stopScheduler();
+        showToast("Scheduler stopped.");
+      } else {
+        startScheduler();
+        showToast(`Scheduler started — checking every ${intervalSelect.value} min.`);
+      }
+    });
+
+    document.getElementById("runCheckNowBtn").addEventListener("click", () => {
+      runAlertCheck();
+    });
+
+    intervalSelect.addEventListener("change", () => {
+      if (schedulerTimer) {
+        startScheduler();
+      }
     });
 
     render();
